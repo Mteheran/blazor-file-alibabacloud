@@ -1,0 +1,105 @@
+@page "/fileazure"
+@using System.Text.RegularExpressions
+@using System.IO
+@using System.Collections.Generic
+@inject HttpClient Http
+@inject IFileService Fileservice
+
+<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" />   
+
+<div class="form-group">
+    <p>@file?.Name</p>
+    <p>@file?.ContentType</p>
+    <p>@(file?.Size != null ? file?.Size/1024 + " KBs" : "")</p>
+    <p>@file?.LastModified</p>
+</div>
+
+<button class="btn btn-primary" @onclick="SaveInAzure" >Save in Azure</button>
+
+@if(fileList.Count() > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File Name</th>
+            </tr>
+        </thead>
+        <tbody>
+             <tr>
+            @foreach (var row in fileList)
+            {
+               <td>@row.FileName</td>
+                <td>
+                    <button class="btn btn-secondary" @onclick="()=> DownLoadFile(row.FileName)">Download</button>
+                </td>
+            }
+             </tr>
+        </tbody>
+    </table>
+}
+
+@code
+{
+    IBrowserFile file;
+    List<string[]> csvData = new List<string[]>();
+
+    IEnumerable<BlazorFile> fileList = new List<BlazorFile>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        fileList = await Http.GetFromJsonAsync<IEnumerable<BlazorFile>>("File");
+    }
+
+    protected async Task DownLoadFile(string fileName)
+    {
+       var infoFile = await Http.GetFromJsonAsync<BlazorFile>($"File/{fileName}");
+       await Fileservice.DownloadBinaryOptim(infoFile.FileName, infoFile.FileInfo);
+    }
+        
+    public async Task OnInputFileChange(InputFileChangeEventArgs e)  
+    {  
+        file = e.File;
+        Regex regex = new Regex(".+\\.csv", RegexOptions.Compiled);  
+        if (regex.IsMatch(file.Name))
+        {  
+            var stream = file.OpenReadStream(); 
+            MemoryStream ms = new MemoryStream();  
+            await stream.CopyToAsync(ms);  
+            stream.Close();  
+            var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray()); 
+        }  
+    }  
+
+    private string[] SplitCSV(string input)  
+    {  
+        //Excludes commas within quotes  
+        Regex csvSplit = new Regex("(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)", RegexOptions.Compiled);  
+        List<string> list = new List<string>();  
+        string curr = null;  
+        foreach (Match match in csvSplit.Matches(input))  
+        {  
+            curr = match.Value;  
+            if (0 == curr.Length)  list.Add(""); 
+            list.Add(curr.TrimStart(','));  
+        }  
+    
+        return list.ToArray();  
+    }  
+
+    protected async Task SaveInAzure()
+    {
+        BlazorFile FileToSave = new BlazorFile();
+        FileToSave.FileName = file?.Name;
+
+
+        // reading file from memory
+        var stream = file.OpenReadStream(); 
+        MemoryStream ms = new MemoryStream();  
+        await stream.CopyToAsync(ms);  
+        stream.Close();  
+
+        FileToSave.FileInfo = ms.ToArray();
+        await Http.PostAsJsonAsync("File", FileToSave);
+    }
+  
+}
