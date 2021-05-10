@@ -14,33 +14,33 @@ namespace api.Controllers
     public class FileController : ControllerBase
     {
         private readonly ILogger<FileController> _logger;
-        private readonly IAlibabaCloudStorageService _azureFile;
+        private readonly IAlibabaCloudStorageService _alibabaCloudFile;
 
-        public FileController(ILogger<FileController> logger, IAlibabaCloudStorageService azure)
+        public FileController(ILogger<FileController> logger, IAlibabaCloudStorageService alibabaCloud)
         {
             _logger = logger;
-            _azureFile = azure;
+            _alibabaCloudFile = alibabaCloud;
         }
 
         [HttpGet]
         public async Task<IEnumerable<BlazorFile>> Get()
         {
             _logger.LogDebug("Gettings files...");
-            return await _azureFile.GetFiles();
+            return await _alibabaCloudFile.GetFiles();
         }
 
         [HttpGet("{id}")]
         public async Task<BlazorFile> Get(string id)
         {
             _logger.LogDebug("Gettings files...");
-            return  await _azureFile.GetInfoFile(id);
+            return  await _alibabaCloudFile.GetInfoFile(id);
         }
 
         [HttpPost]
         public IActionResult Post([FromBody] BlazorFile file)
         {
             _logger.LogDebug("Saving file...");
-            _azureFile.SaveFileAsync(file);
+            _alibabaCloudFile.SaveFileAsync(file);
 
             _logger.LogDebug("File saved!");
 

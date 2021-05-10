@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using shared;
 using Aliyun.OSS;
@@ -22,9 +21,9 @@ namespace api.Services
         public AlibabaCloudStorageService(IConfiguration configuration)
         {
             Configuration = configuration;
-            accessKeyId =  Configuration["AZURE_STORAGE_CONNECTION_STRING"];
-            accessKeySecret =  Configuration["AZURE_STORAGE_CONNECTION_STRING"];
-            endpoint =  Configuration["AZURE_STORAGE_CONNECTION_STRING"];
+            accessKeyId =  Configuration["AccessKeyId"];
+            accessKeySecret =  Configuration["AccessKeySecret"];
+            endpoint =  Configuration["Endpoint"];
         }
         public async Task SaveFileAsync(BlazorFile file)
         {
@@ -32,10 +31,10 @@ namespace api.Services
             var conf = new ClientConfiguration();
 
             // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            conf.IsCname = true;
+            //conf.IsCname = true;
 
             // Create an OSSClient instance.
-            var client = new OssClient(endpoint, accessKeyId, accessKeySecret, conf);
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
             client.PutObject(bucketName, file.FileName, new MemoryStream(file.FileInfo));
         }
@@ -46,10 +45,10 @@ namespace api.Services
             var conf = new ClientConfiguration();
 
             // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            conf.IsCname = true;
+            //conf.IsCname = true;
 
             // Create an OSSClient instance.
-            var client = new OssClient(endpoint, accessKeyId, accessKeySecret, conf);
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
             ObjectListing objects = client.ListObjects(bucketName);
 
@@ -66,20 +65,21 @@ namespace api.Services
     
         public async Task<BlazorFile> GetInfoFile(string fileName)
         {
-            // Create a BlobServiceClient object which will be used to create a container client
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+          // Create a ClientConfiguration instance. Modify parameters as required.
+            var conf = new ClientConfiguration();
 
-            // Create the container and return a container client object
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName); 
+            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
+            //conf.IsCname = true;
 
-            var blobFile = containerClient.GetBlobClient(fileName);
-            var fileInfoInMemory = await blobFile.DownloadAsync();
+            // Create an OSSClient instance.
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
+
+            var objectinfo = client.GetObject(bucketName, fileName);
 
             MemoryStream ms = new MemoryStream();  
-
-            await fileInfoInMemory.Value.Content.CopyToAsync(ms);
+            await objectinfo.Content.CopyToAsync(ms);
             
-            var newBlazorFile = new BlazorFile() { FileName = blobFile.Name, FileInfo = ms.ToArray()  };
+            var newBlazorFile = new BlazorFile() { FileName = objectinfo.Key, FileInfo = ms.ToArray()  };
 
             return newBlazorFile;
         }

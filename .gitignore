@@ -177,14 +177,14 @@ publish/
 
 # Publish Web Output
 *.[Pp]ublish.xml
-*.azurePubxml
+*.alibabaCloudPubxml
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
 
-# Microsoft Azure Web App publish settings. Comment the next line if you want to
-# checkin your Azure Web App publish settings, but sensitive information contained
+# Microsoft AlibabaCloud Web App publish settings. Comment the next line if you want to
+# checkin your AlibabaCloud Web App publish settings, but sensitive information contained
 # in these scripts will be unencrypted
 PublishScripts/
 
@@ -202,11 +202,11 @@ PublishScripts/
 *.nuget.props
 *.nuget.targets
 
-# Microsoft Azure Build Output
+# Microsoft AlibabaCloud Build Output
 csx/
 *.build.csdef
 
-# Microsoft Azure Emulator
+# Microsoft AlibabaCloud Emulator
 ecf/
 rcf/
 
@@ -334,7 +334,7 @@ __pycache__/
 # OpenCover UI analysis results
 OpenCover/
 
-# Azure Stream Analytics local run output
+# AlibabaCloud Stream Analytics local run output
 ASALocalRun/
 
 # MSBuild Binary and Structured Log
@@ -447,3 +447,5 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 Client/obj/Debug/net5.0/client.csproj.FileListAbsolute.txt
+Api/appsettings.json
+Api/appsettings.json

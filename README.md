@@ -91,17 +91,17 @@ private string[] SplitCSV(string input)
     return list.ToArray();  
 }  
 ```
-### Azure storage
+### AlibabaCloud storage
 
-AzureStorageService is used to save and get information for a specifict container in Azure blob storage
+AlibabaCloudStorageService is used to save and get information for a specifict container in AlibabaCloud blob storage
 
 ```csharp
-public class AzureStorageService : IAzureStorageService
+public class AlibabaCloudStorageService : IAlibabaCloudStorageService
     {       
         private readonly IConfiguration Configuration;
         private readonly  string containerName = "csvcontainer";
         private string connectionString = "";
-        public AzureStorageService(IConfiguration configuration)
+        public AlibabaCloudStorageService(IConfiguration configuration)
         {
             Configuration = configuration;
             connectionString =  Configuration["AZURE_STORAGE_CONNECTION_STRING"];
@@ -125,7 +125,7 @@ public class AzureStorageService : IAzureStorageService
             // Create the container and return a container client object
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName); 
 
-            var blobs = containerClient.GetBlobs(Azure.Storage.Blobs.Models.BlobTraits.All, Azure.Storage.Blobs.Models.BlobStates.Version);
+            var blobs = containerClient.GetBlobs(AlibabaCloud.Storage.Blobs.Models.BlobTraits.All, AlibabaCloud.Storage.Blobs.Models.BlobStates.Version);
             List<BlazorFile> list = new List<BlazorFile>();
 
             foreach(var item in blobs)
@@ -159,7 +159,7 @@ public class AzureStorageService : IAzureStorageService
     
     }
 
-    public interface IAzureStorageService
+    public interface IAlibabaCloudStorageService
     {
         Task SaveFileAsync(BlazorFile file);
         Task<IEnumerable<BlazorFile>> GetFiles();
@@ -170,7 +170,7 @@ public class AzureStorageService : IAzureStorageService
 You can set up this dependency on en Startup.cs file
 
 ```csharp
- services.AddScoped<IAzureStorageService, AzureStorageService>();
+ services.AddScoped<IAlibabaCloudStorageService, AlibabaCloudStorageService>();
 ```
 
 Expose the method using the FileController.cs
@@ -181,33 +181,33 @@ Expose the method using the FileController.cs
     public class FileController : ControllerBase
     {
         private readonly ILogger<FileController> _logger;
-        private readonly IAzureStorageService _azureFile;
+        private readonly IAlibabaCloudStorageService _alibabaCloudFile;
 
-        public FileController(ILogger<FileController> logger, IAzureStorageService azure)
+        public FileController(ILogger<FileController> logger, IAlibabaCloudStorageService alibabaCloud)
         {
             _logger = logger;
-            _azureFile = azure;
+            _alibabaCloudFile = alibabaCloud;
         }
 
         [HttpGet]
         public async Task<IEnumerable<BlazorFile>> Get()
         {
             _logger.LogDebug("Gettings files...");
-            return await _azureFile.GetFiles();
+            return await _alibabaCloudFile.GetFiles();
         }
 
         [HttpGet("{id}")]
         public async Task<BlazorFile> Get(string id)
         {
             _logger.LogDebug("Gettings files...");
-            return  await _azureFile.GetInfoFile(id);
+            return  await _alibabaCloudFile.GetInfoFile(id);
         }
 
         [HttpPost]
         public IActionResult Post([FromBody] BlazorFile file)
         {
             _logger.LogDebug("Saving file...");
-            _azureFile.SaveFileAsync(file);
+            _alibabaCloudFile.SaveFileAsync(file);
 
             _logger.LogDebug("File saved!");
 
