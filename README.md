@@ -48,9 +48,22 @@ public async Task OnInputFileChange(InputFileChangeEventArgs e)
 }
 ```
 
+Using "attributes" you can set HTML attributes to the control and indicate the extension file accepted
+
+```csharp
+
+<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" @attributes="browseattributes"  />   
+
+Dictionary<string, object>  browseattributes = new  Dictionary<string, object>()
+{
+             { "accept", ".csv"} //accept online csv
+};
+
+```
 
 
-Using Regex we can validate the file extension
+
+You can use memory stream to read all the information from the file
 
 ```csharp
 IBrowserFile file;
@@ -93,44 +106,56 @@ private string[] SplitCSV(string input)
 ```
 ### AlibabaCloud storage
 
-AlibabaCloudStorageService is used to save and get information for a specifict container in AlibabaCloud blob storage
+AlibabaCloudStorageService is used to save and get information for a specifict container in AlibabaCloud object storage service
 
 ```csharp
-public class AlibabaCloudStorageService : IAlibabaCloudStorageService
+ public class AlibabaCloudStorageService : IAlibabaCloudStorageService
     {       
         private readonly IConfiguration Configuration;
-        private readonly  string containerName = "csvcontainer";
+        private readonly  string bucketName = "mybucketname";
         private string connectionString = "";
+        private readonly string accessKeyId = "<yourAccessKeyId>";
+        private readonly string accessKeySecret = "<yourAccessKeySecret>";
+        private readonly string endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
         public AlibabaCloudStorageService(IConfiguration configuration)
         {
             Configuration = configuration;
-            connectionString =  Configuration["AZURE_STORAGE_CONNECTION_STRING"];
+            accessKeyId =  Configuration["AccessKeyId"];
+            accessKeySecret =  Configuration["AccessKeySecret"];
+            endpoint =  Configuration["Endpoint"];
         }
         public async Task SaveFileAsync(BlazorFile file)
         {
-            // Create a BlobServiceClient object which will be used to create a container client
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);    
+           // Create a ClientConfiguration instance. Modify parameters as required.
+            var conf = new ClientConfiguration();
 
-            // Create the container and return a container client object
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName); 
+            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
+            //conf.IsCname = true;
 
-            await containerClient.UploadBlobAsync(file.FileName, new MemoryStream(file.FileInfo));
+            // Create an OSSClient instance.
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
+
+            client.PutObject(bucketName, file.FileName, new MemoryStream(file.FileInfo));
         }
 
         public async Task<IEnumerable<BlazorFile>> GetFiles()
         {
-            // Create a BlobServiceClient object which will be used to create a container client
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            // Create a ClientConfiguration instance. Modify parameters as required.
+            var conf = new ClientConfiguration();
 
-            // Create the container and return a container client object
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName); 
+            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
+            //conf.IsCname = true;
 
-            var blobs = containerClient.GetBlobs(AlibabaCloud.Storage.Blobs.Models.BlobTraits.All, AlibabaCloud.Storage.Blobs.Models.BlobStates.Version);
+            // Create an OSSClient instance.
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
+
+            ObjectListing objects = client.ListObjects(bucketName);
+
             List<BlazorFile> list = new List<BlazorFile>();
 
-            foreach(var item in blobs)
+            foreach(var item in objects.ObjectSummaries)
             {
-                var newBlazorFile = new BlazorFile() { FileName = item.Name  };
+                var newBlazorFile = new BlazorFile() { FileName = item.Key  };
                 list.Add(newBlazorFile);
             }
 
@@ -139,20 +164,21 @@ public class AlibabaCloudStorageService : IAlibabaCloudStorageService
     
         public async Task<BlazorFile> GetInfoFile(string fileName)
         {
-            // Create a BlobServiceClient object which will be used to create a container client
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+          // Create a ClientConfiguration instance. Modify parameters as required.
+            var conf = new ClientConfiguration();
 
-            // Create the container and return a container client object
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName); 
+            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
+            //conf.IsCname = true;
 
-            var blobFile = containerClient.GetBlobClient(fileName);
-            var fileInfoInMemory = await blobFile.DownloadAsync();
+            // Create an OSSClient instance.
+            var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
+
+            var objectinfo = client.GetObject(bucketName, fileName);
 
             MemoryStream ms = new MemoryStream();  
-
-            await fileInfoInMemory.Value.Content.CopyToAsync(ms);
+            await objectinfo.Content.CopyToAsync(ms);
             
-            var newBlazorFile = new BlazorFile() { FileName = blobFile.Name, FileInfo = ms.ToArray()  };
+            var newBlazorFile = new BlazorFile() { FileName = objectinfo.Key, FileInfo = ms.ToArray()  };
 
             return newBlazorFile;
         }

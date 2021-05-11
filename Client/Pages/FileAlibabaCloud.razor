@@ -5,7 +5,7 @@
 @inject HttpClient Http
 @inject IFileService Fileservice
 
-<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" />   
+<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" @attributes="browseattributes"  />   
 
 <div class="form-group">
     <p>@file?.Name</p>
@@ -44,6 +44,10 @@
 {
     IBrowserFile file;
     List<string[]> csvData = new List<string[]>();
+    Dictionary<string, object>  browseattributes = new  Dictionary<string, object>()
+    {
+             { "accept", ".csv"} //accept online csv
+    };
 
     IEnumerable<BlazorFile> fileList = new List<BlazorFile>();
 

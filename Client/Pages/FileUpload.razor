@@ -2,7 +2,7 @@
 @using System.Text.RegularExpressions
 @using System.IO
 
-<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" />   
+<InputFile OnChange="@OnInputFileChange"  class="btn btn-primary" @attributes="browseattributes" />   
 
 <div class="form-group">
     <p>@file?.Name</p>
@@ -40,6 +40,11 @@
 {
     IBrowserFile file;
     List<string[]> csvData = new List<string[]>();  
+
+    Dictionary<string, object>  browseattributes = new  Dictionary<string, object>()
+    {
+             { "accept", ".csv"} //accept online csv
+    };
     public async Task OnInputFileChange(InputFileChangeEventArgs e)  
     {  
         file = e.File;
