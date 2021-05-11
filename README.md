@@ -1,5 +1,5 @@
-## Blazor file management
-In this repository you will find a complete guide to manage file in blazor
+## Blazor file management wth Alibaba cloud
+In this repository you will find a complete guide to manage file in blazor and save files in alibaba cloud OSS
 
 First, we have to create a new component and add the InputFile
 
