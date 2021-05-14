@@ -104,6 +104,61 @@ private string[] SplitCSV(string input)
     return list.ToArray();  
 }  
 ```
+
+You can show the information of this file reading the first columns as header
+and the rest of the rows are data
+
+```csharp
+@if(csvData.Count() > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                @foreach (var columnHeader in csvData[0])
+                {
+                    <th>@columnHeader</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in csvData.Skip(1))
+            {
+                <tr>
+                    @foreach (var item in row)
+                    {
+                        <td>@item</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+    public async Task OnInputFileChange(InputFileChangeEventArgs e)  
+    {  
+        file = e.File;
+        Regex regex = new Regex(".+\\.csv", RegexOptions.Compiled);  
+        if (regex.IsMatch(file.Name))
+        {  
+            var stream = file.OpenReadStream(); 
+            MemoryStream ms = new MemoryStream();  
+            await stream.CopyToAsync(ms);  
+            stream.Close();  
+            var outputFileString = System.Text.Encoding.UTF8.GetString(ms.ToArray()); 
+            ReadAndShowFileInfo(outputFileString);
+        }  
+    }  
+
+ private void ReadAndShowFileInfo(string FileData)
+    {
+        foreach (var item in FileData.Split(Environment.NewLine))  
+        {  
+            csvData.Add(SplitCSV(item.ToString()));  
+        }  
+    }
+```
+
+
 ### AlibabaCloud storage
 
 AlibabaCloudStorageService is used to save and get information for a specifict container in AlibabaCloud object storage service
