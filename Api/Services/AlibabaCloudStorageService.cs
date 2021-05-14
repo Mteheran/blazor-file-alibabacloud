@@ -14,7 +14,6 @@ namespace api.Services
     {       
         private readonly IConfiguration Configuration;
         private readonly  string bucketName = "mteheranst1";
-        private string connectionString = "";
         private readonly string accessKeyId = "<yourAccessKeyId>";
         private readonly string accessKeySecret = "<yourAccessKeySecret>";
         private readonly string endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
@@ -27,12 +26,6 @@ namespace api.Services
         }
         public async Task SaveFileAsync(BlazorFile file)
         {
-           // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
-
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
@@ -41,12 +34,6 @@ namespace api.Services
 
         public async Task<IEnumerable<BlazorFile>> GetFiles()
         {
-            // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
-
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
@@ -65,11 +52,6 @@ namespace api.Services
     
         public async Task<BlazorFile> GetInfoFile(string fileName)
         {
-          // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
 
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);

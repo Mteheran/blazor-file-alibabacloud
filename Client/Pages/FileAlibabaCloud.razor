@@ -54,7 +54,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        fileList = await Http.GetFromJsonAsync<IEnumerable<BlazorFile>>("File");
+      await  GetFilesFromAlibaba();
+    }
+
+    public async Task GetFilesFromAlibaba()
+    {
+          fileList = await Http.GetFromJsonAsync<IEnumerable<BlazorFile>>("File");
     }
 
     protected async Task DownLoadFile(string fileName)
@@ -107,6 +112,7 @@
 
         FileToSave.FileInfo = ms.ToArray();
         await Http.PostAsJsonAsync("File", FileToSave);
+        await  GetFilesFromAlibaba();
     }
   
 }

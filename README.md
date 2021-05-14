@@ -72,8 +72,8 @@ public async Task OnInputFileChange(InputFileChangeEventArgs e)
     Regex regex = new Regex(".+\\.csv", RegexOptions.Compiled);  
     if (regex.IsMatch(e.File))  
     {  
-         file = e.File;
-        var stream = singleFile.OpenReadStream();  
+        file = e.File;
+        var stream = file.OpenReadStream();  
         var csv = new List<string[]>();  
         MemoryStream ms = new MemoryStream();  
         await stream.CopyToAsync(ms);  
@@ -109,11 +109,22 @@ private string[] SplitCSV(string input)
 AlibabaCloudStorageService is used to save and get information for a specifict container in AlibabaCloud object storage service
 
 ```csharp
- public class AlibabaCloudStorageService : IAlibabaCloudStorageService
+ using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using shared;
+using Aliyun.OSS;
+using Aliyun.OSS.Common;
+
+namespace api.Services
+{
+    public class AlibabaCloudStorageService : IAlibabaCloudStorageService
     {       
         private readonly IConfiguration Configuration;
-        private readonly  string bucketName = "mybucketname";
-        private string connectionString = "";
+        private readonly  string bucketName = "mteheranst1";
         private readonly string accessKeyId = "<yourAccessKeyId>";
         private readonly string accessKeySecret = "<yourAccessKeySecret>";
         private readonly string endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
@@ -126,12 +137,6 @@ AlibabaCloudStorageService is used to save and get information for a specifict c
         }
         public async Task SaveFileAsync(BlazorFile file)
         {
-           // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
-
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
@@ -140,12 +145,6 @@ AlibabaCloudStorageService is used to save and get information for a specifict c
 
         public async Task<IEnumerable<BlazorFile>> GetFiles()
         {
-            // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
-
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
 
@@ -164,11 +163,6 @@ AlibabaCloudStorageService is used to save and get information for a specifict c
     
         public async Task<BlazorFile> GetInfoFile(string fileName)
         {
-          // Create a ClientConfiguration instance. Modify parameters as required.
-            var conf = new ClientConfiguration();
-
-            // Enable CNAME. CNAME indicates a custom domain bound to a bucket.
-            //conf.IsCname = true;
 
             // Create an OSSClient instance.
             var client = new OssClient(endpoint, accessKeyId, accessKeySecret);
@@ -191,6 +185,7 @@ AlibabaCloudStorageService is used to save and get information for a specifict c
         Task<IEnumerable<BlazorFile>> GetFiles();
         Task<BlazorFile> GetInfoFile(string fileName);
     }
+}
 ```
 
 You can set up this dependency on en Startup.cs file
